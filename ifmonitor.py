@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import cmd_repeater
+import statsmonitor
 import argparse
 
 def main(cmd_line, items, interval=1):
-    i = cmd_repeater.ItemController(cmd_line, items)
+    i = statsmonitor.ItemController(cmd_line, items)
     print i.header()
     i.continuous_output(interval)
 
@@ -34,25 +34,25 @@ if __name__ == "__main__":
 
     if args.allitem:
         print_items = [
-            cmd_repeater.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
-            cmd_repeater.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
-            cmd_repeater.Item('RxDropped', 'RX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\sframe:\d+', diff=True),
-            cmd_repeater.Item('RxOverruns', 'RX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:(\d+)\sframe:\d+', diff=True),
-            cmd_repeater.Item('RxFrame', 'RX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:(\d+)', diff=True),
-            cmd_repeater.Item('TxPackets', 'TX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
-            cmd_repeater.Item('TxErrors', 'TX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
-            cmd_repeater.Item('TxDropped', 'TX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\scarrier:\d+', diff=True),
-            cmd_repeater.Item('TxOverruns', 'TX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:(\d+)\scarrier:\d+', diff=True),
-            cmd_repeater.Item('TxFrame', 'TX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:(\d+)', diff=True),
+            statsmonitor.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxDropped', 'RX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxOverruns', 'RX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:(\d+)\sframe:\d+', diff=True),
+            statsmonitor.Item('RxFrame', 'RX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:(\d+)', diff=True),
+            statsmonitor.Item('TxPackets', 'TX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
+            statsmonitor.Item('TxErrors', 'TX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
+            statsmonitor.Item('TxDropped', 'TX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\scarrier:\d+', diff=True),
+            statsmonitor.Item('TxOverruns', 'TX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:(\d+)\scarrier:\d+', diff=True),
+            statsmonitor.Item('TxFrame', 'TX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:(\d+)', diff=True),
         ]
     else:
         print_items = [
-            cmd_repeater.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
-            cmd_repeater.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
-            cmd_repeater.Item('RxDropped', 'RX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\sframe:\d+', diff=True),
-            cmd_repeater.Item('TxPackets', 'TX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
-            cmd_repeater.Item('TxErrors', 'TX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
-            cmd_repeater.Item('TxDropped', 'TX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\scarrier:\d+', diff=True),
+            statsmonitor.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxDropped', 'RX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('TxPackets', 'TX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
+            statsmonitor.Item('TxErrors', 'TX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
+            statsmonitor.Item('TxDropped', 'TX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\scarrier:\d+', diff=True),
         ]
 
     main(cmd_line, print_items, args.interval)
