@@ -3,16 +3,20 @@
 import statsmonitor
 import argparse
 
-def main(cmd_line, items, interval=1):
-    i = statsmonitor.ItemController(cmd_line, items)
+"""
+def main(cmd_line, items, interval=1, outputformat="table"):
+    i = statsmonitor.ItemController(cmd_line, items, outputformat)
     print i.header()
     i.continuous_output(interval)
+"""
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='repeatedly output command result')
     parser.add_argument("interface", help="interface ex) eth0")
     parser.add_argument("-i", "--interval", type=int, default=1,
                         help="command execution interval")
+    parser.add_argument("-f", "--outputformat", default="table",
+                        help="output format -- e.g)table, json")
     parser.add_argument("-a", "--allitem", action="store_true",
                         help="output all items")
 
@@ -34,7 +38,10 @@ if __name__ == "__main__":
 
     if args.allitem:
         print_items = [
+            statsmonitor.Item('HWaddr-StrType', 'HWaddr\s(\w\w:\w\w:\w\w:\w\w:\w\w:\w\w)', diff=False, width=17),
+            statsmonitor.Item('None-sample', 'hogehoge\s(\w\w)', diff=False),
             statsmonitor.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxPackets-NotDiff', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=False),
             statsmonitor.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
             statsmonitor.Item('RxDropped', 'RX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\sframe:\d+', diff=True),
             statsmonitor.Item('RxOverruns', 'RX\spackets:\d+\serrors:\d+\sdropped:\d+\soverruns:(\d+)\sframe:\d+', diff=True),
@@ -47,7 +54,10 @@ if __name__ == "__main__":
         ]
     else:
         print_items = [
+            statsmonitor.Item('HWaddr-StrType', 'HWaddr\s(\w\w:\w\w:\w\w:\w\w:\w\w:\w\w)', diff=False, width=17),
+            statsmonitor.Item('None-sample', 'hogehoge\s(\w\w)', diff=False),
             statsmonitor.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
+            statsmonitor.Item('RxPackets-NotDiff', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=False),
             statsmonitor.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
             statsmonitor.Item('RxDropped', 'RX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\sframe:\d+', diff=True),
             statsmonitor.Item('TxPackets', 'TX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\scarrier:\d+', diff=True),
@@ -55,4 +65,4 @@ if __name__ == "__main__":
             statsmonitor.Item('TxDropped', 'TX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\scarrier:\d+', diff=True),
         ]
 
-    main(cmd_line, print_items, args.interval)
+    statsmonitor.main(cmd_line, print_items, args.interval, args.outputformat)

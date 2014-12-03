@@ -7,9 +7,10 @@ import subprocess
 import shlex
 import argparse
 
-def main(cmd_line, items, interval=1):
-    i = ItemController(cmd_line, items)
-    print i.header()
+def main(cmd_line, items, interval=1, outputformat="table"):
+    i = ItemController(cmd_line, items, outputformat)
+    if outputformat=="table":
+        print i.header()
     i.continuous_output(interval)
 
 class Item():
@@ -24,13 +25,16 @@ class Item():
    """
 
     def __init__(self, label, pattern, diff=False, width=None):
-        self.label      = label
-        self.pattern    = pattern
-        self.diff       = diff
+        self.label         = label
+        self.pattern       = pattern
+        self.diff          = diff
         self.initial_value = None
-        self.value      = None
-        self.last_value = None
-        self.width      = max(len(self.label)+2, 10)
+        self.value         = None
+        self.last_value    = None
+        if type(width) == int:
+            self.width = max(len(self.label)+2, width+2, 10)
+        else:
+            self.width  = max(len(self.label)+2, 10)
 
     def output(self):
         if type(self.value) == int and type(self.last_value) == int:
@@ -43,11 +47,12 @@ class Item():
         return output
 
 class ItemController():
-    def __init__(self, cmd, items):
-        self.cmd_line   = cmd
-        self.cmd_result = None
+    def __init__(self, cmd, items, outputformat="table"):
+        self.cmd_line       = cmd
+        self.cmd_result     = None
         self.cmd_lastupdate = None
-        self.items = items
+        self.items          = items
+        self.outputformat   = outputformat
 
     def run_cmd(self, initial=False):
         if initial:
@@ -73,7 +78,10 @@ class ItemController():
             for line in self.cmd_result:
                 r = re.compile(item.pattern).search(line)
                 if r:
-                    item.value = int(r.group(1))
+                    if r.group(1).isdigit()==True:
+                        item.value = int(r.group(1))
+                    else:
+                        item.value = str(r.group(1))
 
     def header(self,):
         header_line = 'DATE'.ljust(11,' ') + 'TIME'.ljust(15,' ')
@@ -87,19 +95,44 @@ class ItemController():
         return header_line            
 
     def edited_result_line(self, initial=False):
-        if initial:
-            line = str(self.cmd_lastupdate)
-            for item in self.items:
-                if item.diff:
-                    line += str(None).rjust(item.width, ' ')
-                else:
+        if self.outputformat == "table":
+            if initial:
+                line = str(self.cmd_lastupdate)
+                for item in self.items:
+                    if item.diff:
+                        line += str(None).rjust(item.width, ' ')
+                    else:
+                        line += str(item.output()).rjust(item.width, ' ')
+                return line
+            else:
+                line = str(self.cmd_lastupdate)
+                for item in self.items:
                     line += str(item.output()).rjust(item.width, ' ')
-            return line
-        else:
-            line = str(self.cmd_lastupdate)
-            for item in self.items:
-                line += str(item.output()).rjust(item.width, ' ')
-            return line
+                return line
+        elif self.outputformat == "json":
+            if initial:
+                line = '{"timestamp" : ' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '", '
+                for item in self.items:
+                    if item.diff:
+                        line += ', "' + item.label + '" : null'
+                    else:
+                        line += ', "' + item.label + '" : "' + str(item.output()) + '"'
+                line += '}'
+                return line
+            else:
+                line = '{"timestamp" : "' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '"'
+                for item in self.items:
+                    if type(item.output())==int:
+                        line += ', "' + item.label + '" : ' + str(item.output())
+                    elif type(item.output())==str:
+                        if item.output().lower()=="true" or item.output().lower()=="false":
+                            line += ', "' + item.label + '" : ' + str(item.output())
+                        else:
+                            line += ', "' + item.label + '" : "' + str(item.output()) + '"'
+                    else:
+                        line += ', "' + item.label + '" : "' + str(item.output()) + '"'
+                line += '}'
+                return line
         
     def continuous_output(self, interval=1):
         cmd_firstupdate = datetime.now()
