@@ -21,23 +21,23 @@ class Item():
 
     Option:
         diff: whether output incremental difference or itself.
-    width: width of column. 
+        width: width of column. 
    """
 
     def __init__(self, label, pattern, diff=False, width=None):
-        self.label         = label
-        self.pattern       = pattern
-        self.diff          = diff
+        self.label = label
+        self.pattern = pattern
+        self.diff = diff
         self.initial_value = None
-        self.value         = None
-        self.last_value    = None
-        if type(width) == int:
-            self.width = max(len(self.label)+2, width+2, 10)
+        self.value = None
+        self.last_value = None
+        if isinstance(width, int) == True:
+            self.width = max(len(self.label) + 2, width + 2, 10)
         else:
-            self.width  = max(len(self.label)+2, 10)
+            self.width = max(len(self.label) + 2, 10)
 
     def output(self):
-        if type(self.value) == int and type(self.last_value) == int:
+        if isinstance(self.value, int) == True and isinstance(self.last_value, int) == True:
             if self.diff == True:
                 output = self.value - self.last_value
             else:
@@ -48,11 +48,11 @@ class Item():
 
 class ItemController():
     def __init__(self, cmd, items, outputformat="table"):
-        self.cmd_line       = cmd
-        self.cmd_result     = None
+        self.cmd_line = cmd
+        self.cmd_result = None
         self.cmd_lastupdate = None
-        self.items          = items
-        self.outputformat   = outputformat
+        self.items = items
+        self.outputformat = outputformat
 
     def run_cmd(self, initial=False):
         if initial:
@@ -78,7 +78,7 @@ class ItemController():
             for line in self.cmd_result:
                 r = re.compile(item.pattern).search(line)
                 if r:
-                    if r.group(1).isdigit()==True:
+                    if r.group(1).isdigit() == True:
                         item.value = int(r.group(1))
                     else:
                         item.value = str(r.group(1))
@@ -111,24 +111,28 @@ class ItemController():
                 return line
         elif self.outputformat == "json":
             if initial:
-                line = '{"timestamp" : ' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '", '
+                line = '{"timestamp" : ' + self.cmd_lastupdate.isoformat() + '", '
                 for item in self.items:
                     if item.diff:
+                        line += ', "' + item.label + '" : null'
+                    elif isinstance(item.output(), type(None))==True:
                         line += ', "' + item.label + '" : null'
                     else:
                         line += ', "' + item.label + '" : "' + str(item.output()) + '"'
                 line += '}'
                 return line
             else:
-                line = '{"timestamp" : "' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '"'
+                line = '{"timestamp" : "' + self.cmd_lastupdate.isoformat() + '"'
                 for item in self.items:
-                    if type(item.output())==int:
+                    if isinstance(item.output(), int)==True:
                         line += ', "' + item.label + '" : ' + str(item.output())
-                    elif type(item.output())==str:
+                    elif isinstance(item.output(), str)==True:
                         if item.output().lower()=="true" or item.output().lower()=="false":
                             line += ', "' + item.label + '" : ' + str(item.output())
                         else:
                             line += ', "' + item.label + '" : "' + str(item.output()) + '"'
+                    elif isinstance(item.output(), type(None))==True:
+                        line += ', "' + item.label + '" : null'
                     else:
                         line += ', "' + item.label + '" : "' + str(item.output()) + '"'
                 line += '}'
@@ -148,12 +152,13 @@ class ItemController():
                 print self.edited_result_line()
                 elapse = time.time() - t
         except KeyboardInterrupt:
-            elapsed_time = self.cmd_lastupdate - cmd_firstupdate
-            print "\n" + '--- ' + self.cmd_line + ' statistics ---'
-            print 'time ' + str(elapsed_time)
-            for item in self.items:
-                if type(item.value) == int and type(item.initial_value) == int:
-                    print item.label.ljust(item.width, ' ') + ': ' + str(item.value - item.initial_value)
+            if self.outputformat == "table":
+                elapsed_time = self.cmd_lastupdate - cmd_firstupdate
+                print "\n" + '--- ' + self.cmd_line + ' statistics ---'
+                print 'time ' + str(elapsed_time)
+                for item in self.items:
+                    if isinstance(item.value, int) == True and isinstance(item.initial_value, int) == True:
+                        print item.label.ljust(item.width, ' ') + ': ' + str(item.value - item.initial_value)
             
 
 ##########################################
