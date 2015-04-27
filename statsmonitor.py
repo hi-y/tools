@@ -111,12 +111,20 @@ class ItemController():
                 return line
         elif self.outputformat == "json":
             if initial:
-                line = '{"timestamp" : ' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '", '
+                line = '{"timestamp" : "' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '"'
                 for item in self.items:
                     if item.diff:
                         line += ', "' + item.label + '" : null'
                     else:
-                        line += ', "' + item.label + '" : "' + str(item.output()) + '"'
+                        if type(item.output())==int:
+                            line += ', "' + item.label + '" : ' + str(item.output())
+                        elif type(item.output())==str:
+                            if item.output().lower()=="true" or item.output().lower()=="false":
+                                line += ', "' + item.label + '" : ' + str(item.output())
+                            else:
+                                line += ', "' + item.label + '" : "' + str(item.output()) + '"'
+                        else:
+                            line += ', "' + item.label + '" : "' + str(item.output()) + '"'
                 line += '}'
                 return line
             else:
