@@ -7,8 +7,8 @@ import subprocess
 import shlex
 import argparse
 
-def main(cmd_line, items, interval=1, outputformat="table"):
-    i = ItemController(cmd_line, items, outputformat)
+def main(cmd_line, items, interval=1, outputformat="table", count=float("inf")):
+    i = ItemController(cmd_line, items, outputformat, count)
     if outputformat=="table":
         print i.header()
     i.continuous_output(interval)
@@ -47,12 +47,14 @@ class Item():
         return output
 
 class ItemController():
-    def __init__(self, cmd, items, outputformat="table"):
+    def __init__(self, cmd, items, outputformat, count):
         self.cmd_line = cmd
         self.cmd_result = None
         self.cmd_lastupdate = None
         self.items = items
         self.outputformat = outputformat
+        self.count = count
+        print type(self.count)
 
     def run_cmd(self, initial=False):
         if initial:
@@ -114,7 +116,7 @@ class ItemController():
                 return line
         elif self.outputformat == "json":
             if initial:
-                line = '{"timestamp" : "' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '"'
+                line = '{"timestamp" : "' + str(self.cmd_lastupdate.isoformat()) + '"'
                 for item in self.items:
                     if item.diff:
                         line += ', "' + item.label + '" : null'
@@ -151,23 +153,33 @@ class ItemController():
         elif self.outputformat == "csv" or "tsv":
             return "not implemented"
         
+    def print_edited_result_line(self, initial=False):
+        if initial is True:
+            print self.edited_result_line(initial=True)
+            self.count -= 1
+        else:
+            print self.edited_result_line()
+            self.count -= 1
+
     def continuous_output(self, interval=1, count=None):
         """
         To do: need to implement "count" feature.
         """
         cmd_firstupdate = datetime.now()
         self.run_cmd(initial=True)
-        print self.edited_result_line(initial=True)
+        self.print_edited_result_line(initial=True)
         try:
             elapse = 0
-            while True:
+            while self.count > 0:
                 if interval > elapse:
                     time.sleep(interval - elapse)
                 t = time.time()
                 self.run_cmd()
-                print self.edited_result_line()
+                self.print_edited_result_line()
                 elapse = time.time() - t
         except KeyboardInterrupt:
+            pass
+        finally:
             if self.outputformat == "table":
                 elapsed_time = self.cmd_lastupdate - cmd_firstupdate
                 print "\n" + '--- ' + self.cmd_line + ' statistics ---'
