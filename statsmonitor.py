@@ -54,7 +54,6 @@ class ItemController():
         self.items = items
         self.outputformat = outputformat
         self.count = count
-        print type(self.count)
 
     def run_cmd(self, initial=False):
         if initial:
