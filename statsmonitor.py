@@ -7,8 +7,8 @@ import subprocess
 import shlex
 import argparse
 
-def main(cmd_line, items, interval=1, outputformat="table"):
-    i = ItemController(cmd_line, items, outputformat)
+def main(cmd_line, items, interval=1, outputformat="table", count=float("inf")):
+    i = ItemController(cmd_line, items, outputformat, count)
     if outputformat=="table":
         print i.header()
     i.continuous_output(interval)
@@ -31,13 +31,13 @@ class Item():
         self.initial_value = None
         self.value = None
         self.last_value = None
-        if isinstance(width, int) == True:
+        if type(width) is int:
             self.width = max(len(self.label) + 2, width + 2, 10)
         else:
             self.width = max(len(self.label) + 2, 10)
 
     def output(self):
-        if isinstance(self.value, int) == True and isinstance(self.last_value, int) == True:
+        if type(self.value) is int and type(self.last_value) is int:
             if self.diff == True:
                 output = self.value - self.last_value
             else:
@@ -47,12 +47,13 @@ class Item():
         return output
 
 class ItemController():
-    def __init__(self, cmd, items, outputformat="table"):
+    def __init__(self, cmd, items, outputformat, count):
         self.cmd_line = cmd
         self.cmd_result = None
         self.cmd_lastupdate = None
         self.items = items
         self.outputformat = outputformat
+        self.count = count
 
     def run_cmd(self, initial=False):
         if initial:
@@ -95,6 +96,9 @@ class ItemController():
         return header_line            
 
     def edited_result_line(self, initial=False):
+        """
+        To do: need to support "csv,tsv" format.
+        """
         if self.outputformat == "table":
             if initial:
                 line = str(self.cmd_lastupdate)
@@ -111,17 +115,17 @@ class ItemController():
                 return line
         elif self.outputformat == "json":
             if initial:
-                line = '{"timestamp" : "' + str(self.cmd_lastupdate.strftime("%Y-%m-%dT%H:%M:%S%z")) + '"'
+                line = '{"timestamp" : "' + str(self.cmd_lastupdate.isoformat()) + '"'
                 for item in self.items:
                     if item.diff:
                         line += ', "' + item.label + '" : null'
-                    elif isinstance(item.output(), type(None))==True:
+                    elif item.output() is None:
                         line += ', "' + item.label + '" : null'
                     else:
                         if type(item.output())==int:
                             line += ', "' + item.label + '" : ' + str(item.output())
                         elif type(item.output())==str:
-                            if item.output().lower()=="true" or item.output().lower()=="false":
+                            if item.output().lower()=="true" or "false":
                                 line += ', "' + item.label + '" : ' + str(item.output())
                             else:
                                 line += ', "' + item.label + '" : "' + str(item.output()) + '"'
@@ -132,40 +136,55 @@ class ItemController():
             else:
                 line = '{"timestamp" : "' + self.cmd_lastupdate.isoformat() + '"'
                 for item in self.items:
-                    if isinstance(item.output(), int)==True:
+                    if type(item.output()) is int:
                         line += ', "' + item.label + '" : ' + str(item.output())
-                    elif isinstance(item.output(), str)==True:
-                        if item.output().lower()=="true" or item.output().lower()=="false":
+                    elif type(item.output()) is str:
+                        if item.output().lower()=="true" or "false":
                             line += ', "' + item.label + '" : ' + str(item.output())
                         else:
                             line += ', "' + item.label + '" : "' + str(item.output()) + '"'
-                    elif isinstance(item.output(), type(None))==True:
+                    elif type(item.output()) is None:
                         line += ', "' + item.label + '" : null'
                     else:
                         line += ', "' + item.label + '" : "' + str(item.output()) + '"'
                 line += '}'
                 return line
+        elif self.outputformat == "csv" or "tsv":
+            return "not implemented"
         
-    def continuous_output(self, interval=1):
+    def print_edited_result_line(self, initial=False):
+        if initial is True:
+            print self.edited_result_line(initial=True)
+            self.count -= 1
+        else:
+            print self.edited_result_line()
+            self.count -= 1
+
+    def continuous_output(self, interval=1, count=None):
+        """
+        To do: need to implement "count" feature.
+        """
         cmd_firstupdate = datetime.now()
         self.run_cmd(initial=True)
-        print self.edited_result_line(initial=True)
+        self.print_edited_result_line(initial=True)
         try:
             elapse = 0
-            while True:
+            while self.count > 0:
                 if interval > elapse:
                     time.sleep(interval - elapse)
                 t = time.time()
                 self.run_cmd()
-                print self.edited_result_line()
+                self.print_edited_result_line()
                 elapse = time.time() - t
         except KeyboardInterrupt:
+            pass
+        finally:
             if self.outputformat == "table":
                 elapsed_time = self.cmd_lastupdate - cmd_firstupdate
                 print "\n" + '--- ' + self.cmd_line + ' statistics ---'
                 print 'time ' + str(elapsed_time)
                 for item in self.items:
-                    if isinstance(item.value, int) == True and isinstance(item.initial_value, int) == True:
+                    if type(item.value) is int and type(item.initial_value) is int:
                         print item.label.ljust(item.width, ' ') + ': ' + str(item.value - item.initial_value)
             
 

@@ -19,6 +19,8 @@ if __name__ == "__main__":
                         help="output format -- e.g)table, json")
     parser.add_argument("-a", "--allitem", action="store_true",
                         help="output all items")
+    parser.add_argument("-c", "--count", type=int, default=float("inf"),
+                        help="repeat times")
 
     args = parser.parse_args()
 
@@ -40,6 +42,7 @@ if __name__ == "__main__":
         print_items = [
             statsmonitor.Item('HWaddr-StrType', 'HWaddr\s(\w\w:\w\w:\w\w:\w\w:\w\w:\w\w)', diff=False, width=17),
             statsmonitor.Item('None-sample', 'hogehoge\s(\w\w)', diff=False),
+            statsmonitor.Item('None-diff-sample', 'hogehoge\s(\w\w)', diff=True),
             statsmonitor.Item('RxPackets', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
             statsmonitor.Item('RxPackets-NotDiff', 'RX\spackets:(\d+)\serrors:\d+\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=False),
             statsmonitor.Item('RxErrors', 'RX\spackets:\d+\serrors:(\d+)\sdropped:\d+\soverruns:\d+\sframe:\d+', diff=True),
@@ -65,4 +68,4 @@ if __name__ == "__main__":
             statsmonitor.Item('TxDropped', 'TX\spackets:\d+\serrors:\d+\sdropped:(\d+)\soverruns:\d+\scarrier:\d+', diff=True),
         ]
 
-    statsmonitor.main(cmd_line, print_items, args.interval, args.outputformat)
+    statsmonitor.main(cmd_line, print_items, args.interval, args.outputformat, args.count)
